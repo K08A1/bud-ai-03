@@ -1,0 +1,38 @@
+# 临时文件和系统文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 日志文件
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 临时演示文件（可选择性包含）
+test-flow.html
+quick-demo.html
+完整可用演示.html
+
+# 备份文件
+*.backup
+*.bak
+*.tmp
+
+# 开发过程文件
+功能测试清单.md
+任务流程优化说明.md
+立即可用演示.md
+最终演示说明.md
+客户演示指南.md
