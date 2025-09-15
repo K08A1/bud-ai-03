@@ -415,6 +415,110 @@
             background: rgba(255, 255, 255, 0.2);
         }
         
+        /* 首页样式定义 */
+        .today-learning {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .learning-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .learning-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .learning-streak {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .learning-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 12px;
+            border-radius: 12px;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .ability-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .ability-item {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .ability-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+        
+        .ability-item.completed {
+            border-color: #34d399;
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+        }
+        
+        .ability-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        
+        .ability-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        
+        .ability-progress {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .ability-item.completed .ability-progress {
+            color: #059669;
+            font-weight: 600;
+        }
+        
         /* 故事墙卡片样式 */
         .story-card {
             background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
@@ -868,14 +972,23 @@
         
         // 检查是否需要AI测评
         function checkNeedAssessment() {
-            // 检查是否已完成初始测评
-            const hasCompletedAssessment = localStorage.getItem('mengya_assessment_completed');
+            // 检查是否在当前会话中已完成测评
+            const hasCompletedAssessment = localStorage.getItem('mengya_assessment_completed') === 'true';
+            const sessionAssessmentCompleted = sessionStorage.getItem('session_assessment_completed') === 'true';
             
-            if (!hasCompletedAssessment) {
+            if (!hasCompletedAssessment || !sessionAssessmentCompleted) {
+                // 清除之前的测评记录，确保重新测评
+                localStorage.removeItem('mengya_assessment_completed');
+                localStorage.removeItem('mengya_assessment_data');
+                sessionStorage.removeItem('session_assessment_completed');
+                
                 // 显示AI测评引导
                 showAIAssessmentIntro();
+                
+                // 显示启动提示
+                showNotification('🚀 欢迎使用萌芽AI！即将开始AI能力测评...');
             } else {
-                // 直接进入应用
+                // 如果当前会话已完成测评，直接进入应用
                 initializeAppData();
                 showWelcomeNotification();
             }
@@ -1164,29 +1277,31 @@
             
             event.currentTarget.classList.add('active');
             
+            // 根据tab参数切换到对应界面
             switch(tab) {
                 case 'home':
+                    switchToHomeInterface();
                     showNotification('🏠 首页');
                     break;
                 case 'learning':
-                    showNotification('🎯 正在加载训练内容...');
-                    setTimeout(() => openTrainingCenter(), 1000);
+                    switchToTrainingInterface();
+                    showNotification('🎯 训练中心');
                     break;
                 case 'ai':
-                    showNotification('🤖 AI助教准备就绪...');
-                    setTimeout(() => openAIAssistant(), 1000);
+                    switchToAIInterface();
+                    showNotification('🤖 AI助教');
                     break;
                 case 'story':
-                    showNotification('📚 正在加载故事内容...');
-                    setTimeout(() => openStoryWall(), 1000);
+                    switchToStoryInterface();
+                    showNotification('📚 故事墙');
                     break;
                 case 'profile':
-                    showNotification('👤 正在加载个人信息...');
-                    setTimeout(() => openProfileCenter(), 1000);
+                    switchToProfileInterface();
+                    showNotification('👤 个人中心');
                     break;
                 case 'parent':
-                    showNotification('👨‍👩‍👧‍👦 正在进入家长端...');
-                    setTimeout(() => openParentPortal(), 1000);
+                    openParentPortal();
+                    showNotification('👨‍👩‍👧‍👦 家长端');
                     break;
             }
         }
@@ -1202,7 +1317,7 @@
         }
         
         function openPartnerCenter() {
-            showNotification('🌱 小芽芽：主人来看我了！我们一起玩吧！');
+            showNotification('🌱 查看学习伙伴的成长记录...');
             
             // 切换到伙伴详细界面
             setTimeout(() => {
@@ -1237,22 +1352,9 @@
             }, 1000);
         }
         
-        // 快速互动功能
-        function feedPartnerQuick() {
-            showNotification('🍯 小芽芽：谢谢主人！我更有活力了！+20成长值');
-            
-            // 添加视觉反馈
-            const partnerIcon = event.currentTarget.closest('.feature-card').querySelector('.feature-content div[style*="font-size: 32px"]');
-            if (partnerIcon) {
-                partnerIcon.style.animation = 'bounce 1s ease-in-out';
-                setTimeout(() => {
-                    partnerIcon.style.animation = '';
-                }, 1000);
-            }
-        }
-        
-        function playWithPartnerQuick() {
-            showNotification('🎮 小芽芽：和主人玩游戏最开心了！+25活跃度');
+        // 伙伴交互功能（仅用于查看，不主动增加成长值）
+        function interactWithPartner() {
+            showNotification('🌱 小芽芽正在安静等待，完成训练任务让它成长吧！');
         }
         
         function likeStory() {
@@ -1486,63 +1588,121 @@
                         <button onclick="switchToHomeInterface()" style="background: none; border: none; color: #007AFF; font-size: 16px; cursor: pointer; margin-right: 16px;">
                             <i class="fas fa-arrow-left"></i> 返回
                         </button>
-                        <h2 style="font-size: 20px; font-weight: 700; color: #1d1d1f;">我的伙伴</h2>
+                        <h2 style="font-size: 20px; font-weight: 700; color: #1d1d1f;">我的学习伙伴</h2>
                     </div>
                     
-                    <div style="background: linear-gradient(135deg, #34d399 0%, #10b981 100%); color: white; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 20px;">
-                        <div style="font-size: 80px; margin-bottom: 16px; cursor: pointer;" onclick="partnerBigInteraction()">🌳</div>
-                        <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">小芽芽</h3>
-                        <p style="font-size: 14px; opacity: 0.9; margin-bottom: 16px;">Lv.4 智慧树 • 开心愉悦</p>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
-                            <div style="background: rgba(255, 255, 255, 0.2); padding: 12px; border-radius: 8px;">
-                                <div style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">580</div>
-                                <div style="font-size: 12px; opacity: 0.9;">成长值</div>
+                    <!-- 伙伴主要信息卡片 -->
+                    <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 20px; padding: 24px; margin-bottom: 20px; border: 1px solid #bbf7d0;">
+                        <div style="text-align: center; margin-bottom: 24px;">
+                            <div style="position: relative; display: inline-block; margin-bottom: 16px;">
+                                <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #a7f3d0, #34d399); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 40px rgba(52, 211, 153, 0.3); margin: 0 auto; cursor: pointer;" onclick="partnerBigInteraction()">
+                                    <div style="font-size: 60px;">🌳</div>
+                                </div>
+                                <div style="position: absolute; top: -8px; right: -8px; background: #059669; color: white; border-radius: 16px; padding: 4px 12px; font-size: 12px; font-weight: 700; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);">Lv.4</div>
                             </div>
-                            <div style="background: rgba(255, 255, 255, 0.2); padding: 12px; border-radius: 8px;">
-                                <div style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">420</div>
-                                <div style="font-size: 12px; opacity: 0.9;">活跃度</div>
+                            
+                            <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 8px; color: #065f46;">小芽芽</h3>
+                            <p style="font-size: 16px; color: #047857; margin-bottom: 20px;">智慧成长树</p>
+                            
+                            <!-- 状态标签 -->
+                            <div style="display: inline-flex; align-items: center; background: #f0f9ff; color: #0c4a6e; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 500; border: 1px solid #bae6fd;">
+                                💤 安静等待中...
                             </div>
                         </div>
                         
-                        <div style="display: flex; gap: 12px;">
-                            <button onclick="feedPartnerBig()" style="flex: 1; background: rgba(255, 255, 255, 0.2); border: none; color: white; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                                🍯 喂食
-                            </button>
-                            <button onclick="playWithPartnerBig()" style="flex: 1; background: rgba(255, 255, 255, 0.2); border: none; color: white; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                                🎮 游戏
-                            </button>
-                            <button onclick="decoratePartnerBig()" style="flex: 1; background: rgba(255, 255, 255, 0.2); border: none; color: white; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                                🎨 装扮
-                            </button>
+                        <!-- 数据展示 -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                            <div style="background: white; padding: 16px; border-radius: 12px; text-align: center; border: 1px solid #d1fae5;">
+                                <div style="font-size: 24px; font-weight: 700; margin-bottom: 4px; color: #059669;">580</div>
+                                <div style="font-size: 12px; color: #6b7280;">成长值</div>
+                            </div>
+                            <div style="background: white; padding: 16px; border-radius: 12px; text-align: center; border: 1px solid #d1fae5;">
+                                <div style="font-size: 24px; font-weight: 700; margin-bottom: 4px; color: #0891b2;">3</div>
+                                <div style="font-size: 12px; color: #6b7280;">连续学习天数</div>
+                            </div>
+                        </div>
+                        
+                        <!-- 成长进度 -->
+                        <div style="background: white; border-radius: 12px; padding: 16px; border: 1px solid #d1fae5;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span style="font-size: 14px; font-weight: 600; color: #374151;">成长进度</span>
+                                <span style="font-size: 12px; color: #6b7280;">580 / 800</span>
+                            </div>
+                            <div style="background: #f3f4f6; height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 8px;">
+                                <div style="background: linear-gradient(90deg, #34d399, #059669); width: 72.5%; height: 100%; border-radius: 4px; transition: width 0.5s ease;"></div>
+                            </div>
+                            <div style="font-size: 12px; color: #6b7280; text-align: center;">还需要 220 成长值即可进化到 Lv.5</div>
                         </div>
                     </div>
                     
-                    <div style="background: white; border-radius: 12px; padding: 20px;">
-                        <h3 style="color: #1d1d1f; margin-bottom: 16px;">伙伴成长历程</h3>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                            <div style="text-align: center;">
-                                <div style="font-size: 20px; margin-bottom: 4px;">🌱</div>
-                                <div style="font-size: 10px; color: #34d399; font-weight: 600;">萌芽期</div>
-                            </div>
-                            <div style="flex: 1; height: 2px; background: #34d399; margin: 0 8px; border-radius: 1px;"></div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 20px; margin-bottom: 4px;">🌿</div>
-                                <div style="font-size: 10px; color: #34d399; font-weight: 600;">成长期</div>
-                            </div>
-                            <div style="flex: 1; height: 2px; background: #34d399; margin: 0 8px; border-radius: 1px;"></div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 20px; margin-bottom: 4px;">🌳</div>
-                                <div style="font-size: 10px; color: #34d399; font-weight: 600;">智慧期</div>
-                            </div>
-                            <div style="flex: 1; height: 2px; background: #e5e5ea; margin: 0 8px; border-radius: 1px;"></div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 20px; margin-bottom: 4px; opacity: 0.3;">🌲</div>
-                                <div style="font-size: 10px; color: #8e8e93;">繁茂期</div>
-                            </div>
+                    <!-- 成长规则说明 -->
+                    <div style="background: #fef3c7; border: 1px solid #fbbf24; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 16px; margin-right: 8px;">💡</span>
+                            <span style="font-size: 14px; font-weight: 600; color: #92400e;">成长规则</span>
                         </div>
-                        <div style="text-align: center; color: #8e8e93; font-size: 12px;">
-                            下一阶段需要：成长值800 (还需220)
+                        <div style="font-size: 13px; color: #92400e; line-height: 1.4;">
+                            • 完成训练任务可获得成长值 (+15~30)<br>
+                            • 连续学习有额外奖励 (+10~50)<br>
+                            • 如果超过2天没有学习，成长值会减少 (-20)
+                        </div>
+                    </div>
+                    
+                    <!-- 最近成长记录 -->
+                    <div style="background: white; border-radius: 12px; padding: 16px; border: 1px solid #e5e7eb;">
+                        <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 12px; color: #1f2937;">最近成长记录</h4>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #f9fafb; border-radius: 8px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 32px; height: 32px; background: #34d399; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                        <span style="font-size: 14px;">✅</span>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 14px; font-weight: 500; color: #1f2937;">完成创造力训练</div>
+                                        <div style="font-size: 12px; color: #6b7280;">今天 14:30</div>
+                                    </div>
+                                </div>
+                                <span style="font-size: 14px; font-weight: 600; color: #059669;">+25</span>
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #f9fafb; border-radius: 8px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 32px; height: 32px; background: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                        <span style="font-size: 14px;">🔥</span>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 14px; font-weight: 500; color: #1f2937;">连续学习奖励</div>
+                                        <div style="font-size: 12px; color: #6b7280;">昨天</div>
+                                    </div>
+                                </div>
+                                <span style="font-size: 14px; font-weight: 600; color: #059669;">+30</span>
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #f9fafb; border-radius: 8px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 32px; height: 32px; background: #8b5cf6; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                        <span style="font-size: 14px;">🏆</span>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 14px; font-weight: 500; color: #1f2937;">获得"创意大师"成就</div>
+                                        <div style="font-size: 12px; color: #6b7280;">2天前</div>
+                                    </div>
+                                </div>
+                                <span style="font-size: 14px; font-weight: 600; color: #059669;">+50</span>
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #fef2f2; border-radius: 8px; border: 1px solid #fecaca;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 32px; height: 32px; background: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                        <span style="font-size: 14px;">😴</span>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 14px; font-weight: 500; color: #1f2937;">学习中断惩罚</div>
+                                        <div style="font-size: 12px; color: #6b7280;">3天前（2天未学习）</div>
+                                    </div>
+                                </div>
+                                <span style="font-size: 14px; font-weight: 600; color: #dc2626;">-20</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1615,30 +1775,85 @@
         }
         
         function switchToHomeInterface() {
-            // 重新加载首页内容，但不刷新整个页面
+            // 完全重置并重新加载首页内容
+            const appContent = document.getElementById('appContent');
+            
+            // 清空内容
+            appContent.innerHTML = '';
+            
+            // 重新初始化首页
+            initializeMainInterface();
+            
+            // 重新设置底部导航状态
+            resetTabNavigation();
+            
+            // 强制重新应用样式
+            setTimeout(() => {
+                // 确保样式正确应用
+                const style = document.createElement('style');
+                style.textContent = `
+                    .today-learning {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                        color: white !important;
+                        border-radius: 16px !important;
+                        padding: 20px !important;
+                        margin-bottom: 20px !important;
+                        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3) !important;
+                    }
+                    .learning-stats {
+                        display: grid !important;
+                        grid-template-columns: repeat(3, 1fr) !important;
+                        gap: 16px !important;
+                    }
+                    .ability-grid {
+                        display: grid !important;
+                        grid-template-columns: repeat(2, 1fr) !important;
+                        gap: 12px !important;
+                    }
+                    .ability-item {
+                        background: white !important;
+                        border-radius: 12px !important;
+                        padding: 16px !important;
+                        text-align: center !important;
+                        cursor: pointer !important;
+                        transition: all 0.3s ease !important;
+                        border: 2px solid transparent !important;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+                    }
+                `;
+                document.head.appendChild(style);
+            }, 100);
+            
+            // 显示重置通知
+            showNotification('🏠 已返回首页');
+        }
+        
+        // 初始化主界面
+        function initializeMainInterface() {
             const appContent = document.getElementById('appContent');
             appContent.innerHTML = `
-                <!-- 欢迎横幅 -->
-                <div class="today-learning">
-                    <div class="learning-header">
-                        <div class="learning-title">今日学习</div>
-                        <div class="learning-streak">🔥 连续5天</div>
+                <div style="padding: 20px; background: #f8fafc; min-height: 100vh;">
+                    <!-- 欢迎横幅 -->
+                    <div class="today-learning">
+                        <div class="learning-header">
+                            <div class="learning-title">今日学习</div>
+                            <div class="learning-streak">🔥 连续5天</div>
+                        </div>
+                        <div class="learning-stats">
+                            <div class="stat-item">
+                                <div class="stat-number" id="todayTasks">3</div>
+                                <div class="stat-label">完成任务</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="todayExp">45</div>
+                                <div class="stat-label">获得经验</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="todayTime">25</div>
+                                <div class="stat-label">学习分钟</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="learning-stats">
-                        <div class="stat-item">
-                            <div class="stat-number" id="todayTasks">3</div>
-                            <div class="stat-label">完成任务</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number" id="todayExp">45</div>
-                            <div class="stat-label">获得经验</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number" id="todayTime">25</div>
-                            <div class="stat-label">学习分钟</div>
-                        </div>
-                    </div>
-                </div>
                 
                 <!-- 能力训练 -->
                 <div class="ios-card">
@@ -1680,20 +1895,43 @@
                     <div class="card-header">
                         <div class="card-title">
                             <span>🌱</span>
-                            我的伙伴
+                            我的学习伙伴
                         </div>
-                        <span style="color: #34d399; font-size: 14px;">Lv.4</span>
+                        <span style="color: #34d399; font-size: 14px;" onclick="openPartnerCenter()">详情 ></span>
                     </div>
-                    <div class="card-content partner-card">
-                        <div class="partner-avatar" onclick="interactWithPartner()">🌳</div>
-                        <div class="partner-info">
-                            <div class="partner-name">小芽芽</div>
-                            <div class="partner-status">开心愉悦 • 想要学习</div>
+                    <div class="card-content" style="padding: 20px;">
+                        <!-- 伙伴展示区域 -->
+                        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                            <div style="position: relative; width: 80px; height: 80px; background: linear-gradient(135deg, #a7f3d0, #34d399); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 25px rgba(52, 211, 153, 0.3);" onclick="openPartnerCenter()">
+                                <div style="font-size: 40px; cursor: pointer;">🌳</div>
+                                <div style="position: absolute; top: -5px; right: -5px; background: #10b981; color: white; border-radius: 12px; padding: 2px 6px; font-size: 10px; font-weight: 600;">Lv.4</div>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 18px; font-weight: 700; color: #1d1d1f; margin-bottom: 4px;">小芽芽</div>
+                                <div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">智慧成长树</div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="background: #f0fdf4; color: #166534; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 500;">
+                                        📈 成长值: 580
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="partner-actions">
-                            <button class="partner-action-btn" onclick="feedPartner()">喂食</button>
-                            <button class="partner-action-btn" onclick="playWithPartner()">游戏</button>
-                            <button class="partner-action-btn" onclick="decoratePartner()">装扮</button>
+                        
+                        <!-- 成长进度条 -->
+                        <div style="margin-bottom: 16px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span style="font-size: 12px; color: #6b7280;">距离下次进化</span>
+                                <span style="font-size: 12px; color: #6b7280;">220/800</span>
+                            </div>
+                            <div style="background: #f3f4f6; height: 6px; border-radius: 3px; overflow: hidden;">
+                                <div style="background: linear-gradient(90deg, #34d399, #10b981); width: 27.5%; height: 100%; border-radius: 3px; transition: width 0.3s ease;"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- 状态提示 -->
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; text-align: center;">
+                            <div style="font-size: 13px; color: #64748b; margin-bottom: 4px;">💤 小芽芽在安静等待...</div>
+                            <div style="font-size: 12px; color: #94a3b8;">完成训练任务可以获得成长值哦！</div>
                         </div>
                     </div>
                 </div>
@@ -1747,11 +1985,64 @@
                         </div>
                     </div>
                 </div>
+                </div>
             `;
+            
+            // 重新初始化首页交互逻辑
+            updateHomePageData();
+            setupHomePageInteractions();
+        }
+        
+        // 更新首页数据显示
+        function updateHomePageData() {
+            // 更新今日学习统计
+            const userData = JSON.parse(localStorage.getItem('mengya_user_data') || '{}');
+            
+            // 更新今日任务数
+            const todayTasksEl = document.getElementById('todayTasks');
+            if (todayTasksEl) {
+                todayTasksEl.textContent = userData.dailyStats?.tasksCompleted || 3;
+            }
+            
+            // 更新今日经验
+            const todayExpEl = document.getElementById('todayExp');
+            if (todayExpEl) {
+                todayExpEl.textContent = userData.dailyStats?.experienceGained || 45;
+            }
+            
+            // 更新学习时间
+            const todayTimeEl = document.getElementById('todayTime');
+            if (todayTimeEl) {
+                todayTimeEl.textContent = userData.dailyStats?.studyMinutes || 25;
+            }
             
             // 重新设置首页Tab为活跃状态
             document.querySelectorAll('.tab-item').forEach(item => item.classList.remove('active'));
-            document.querySelector('.tab-item[onclick*="home"]').classList.add('active');
+            const homeTab = document.querySelector('.tab-item[onclick*="switchToHomeInterface"]');
+            if (homeTab) {
+                homeTab.classList.add('active');
+            }
+        }
+        
+        // 设置首页交互
+        function setupHomePageInteractions() {
+            // 重新绑定所有点击事件已在HTML中定义，无需额外绑定
+            console.log('首页交互已重新初始化');
+        }
+        
+        // 重置底部导航状态
+        function resetTabNavigation() {
+            // 重置所有tab状态
+            const tabs = document.querySelectorAll('.tab-item');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 激活首页tab
+            const homeTab = document.querySelector('.tab-item[onclick*="switchToHomeInterface"]');
+            if (homeTab) {
+                homeTab.classList.add('active');
+            }
         }
         
         // 训练功能 - 添加具体训练内容
@@ -2499,7 +2790,7 @@
                             </div>
                         </div>
                         
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
                             <div style="text-align: center;">
                                 <div style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">+3</div>
                                 <div style="font-size: 12px; opacity: 0.9;">${abilityName}点数</div>
@@ -2507,6 +2798,10 @@
                             <div style="text-align: center;">
                                 <div style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">+5</div>
                                 <div style="font-size: 12px; opacity: 0.9;">经验值</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 20px; font-weight: 700; margin-bottom: 4px; color: #34d399;">+25</div>
+                                <div style="font-size: 12px; opacity: 0.9;">🌱成长值</div>
                             </div>
                             <div style="text-align: center;">
                                 <div style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">+1</div>
@@ -2528,6 +2823,24 @@
                         <h3 style="color: #1d1d1f; margin-bottom: 12px;">💡 学习建议</h3>
                         <div style="color: #666; font-size: 14px; line-height: 1.5;">
                             ${getLearningAdvice(ability, taskIndex)}
+                        </div>
+                    </div>
+                    
+                    <!-- 小芽芽成长提示 -->
+                    <div style="background: linear-gradient(135deg, #dcfce7, #bbf7d0); border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid #86efac;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <div style="font-size: 32px;">🌳</div>
+                            <div>
+                                <h3 style="color: #065f46; margin-bottom: 4px;">小芽芽很开心！</h3>
+                                <p style="color: #047857; font-size: 14px;">你的努力学习让我又成长了一些 ✨</p>
+                            </div>
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 12px; border-left: 4px solid #34d399;">
+                            <p style="color: #374151; font-size: 13px; line-height: 1.4;">
+                                💪 通过这次训练，我获得了 +25 成长值！<br>
+                                🔥 坚持每天学习，我就能更快进化到下一个阶段哦！<br>
+                                😴 记住，如果超过2天不学习，我的成长值会减少的...
+                            </p>
                         </div>
                     </div>
                     
@@ -3129,25 +3442,8 @@
             showNotification('🌳 小芽芽：主人！我现在是智慧树了，我们一起学习吧！');
         }
         
-        function feedPartner() {
-            showNotification('🍯 小芽芽很开心！成长值+25');
-            
-            // 添加视觉反馈
-            const partnerAvatar = document.querySelector('.partner-avatar');
-            if (partnerAvatar) {
-                partnerAvatar.style.animation = 'bounce 1s ease-in-out';
-                setTimeout(() => {
-                    partnerAvatar.style.animation = '';
-                }, 1000);
-            }
-        }
-        
-        function playWithPartner() {
-            showNotification('🎮 和小芽芽玩得很开心！活跃度+30');
-        }
-        
-        function decoratePartner() {
-            showNotification('🎨 小芽芽戴上了新帽子！装扮功能已激活');
+        function partnerBigInteraction() {
+            showNotification('🌳 小芽芽静静地等待着，只有通过学习训练才能帮助它成长哦！');
         }
         
         // 添加CSS动画
@@ -3507,8 +3803,12 @@
             showNotification('⚠️ 跳过测评将使用默认学习方案');
             
             setTimeout(() => {
+                // 标记测评已完成（跳过也算完成）
+                sessionStorage.setItem('session_assessment_completed', 'true');
                 localStorage.setItem('mengya_assessment_completed', 'true');
-                initializeAppData();
+                
+                // 直接进入主界面
+                initializeMainInterface();
                 showWelcomeNotification();
             }, 2000);
         }
@@ -3523,7 +3823,13 @@
                 showNotification('✅ 个性化学习环境已准备就绪！');
                 
                 setTimeout(() => {
-                    location.reload(); // 重新加载以显示主界面
+                    // 标记当前会话已完成测评
+                    sessionStorage.setItem('session_assessment_completed', 'true');
+                    localStorage.setItem('mengya_assessment_completed', 'true');
+                    
+                    // 直接进入主界面，不重新加载页面
+                    initializeMainInterface();
+                    showWelcomeNotification();
                 }, 2000);
             }, 2000);
         }
