@@ -1787,45 +1787,114 @@
             // 重新设置底部导航状态
             resetTabNavigation();
             
-            // 强制重新应用样式
-            setTimeout(() => {
-                // 确保样式正确应用
-                const style = document.createElement('style');
-                style.textContent = `
-                    .today-learning {
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-                        color: white !important;
-                        border-radius: 16px !important;
-                        padding: 20px !important;
-                        margin-bottom: 20px !important;
-                        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3) !important;
-                    }
-                    .learning-stats {
-                        display: grid !important;
-                        grid-template-columns: repeat(3, 1fr) !important;
-                        gap: 16px !important;
-                    }
-                    .ability-grid {
-                        display: grid !important;
-                        grid-template-columns: repeat(2, 1fr) !important;
-                        gap: 12px !important;
-                    }
-                    .ability-item {
-                        background: white !important;
-                        border-radius: 12px !important;
-                        padding: 16px !important;
-                        text-align: center !important;
-                        cursor: pointer !important;
-                        transition: all 0.3s ease !important;
-                        border: 2px solid transparent !important;
-                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-                    }
-                `;
-                document.head.appendChild(style);
-            }, 100);
+            // 立即应用样式，不等待
+            applyHomePageStyles();
             
             // 显示重置通知
             showNotification('🏠 已返回首页');
+        }
+        
+        // 专门用于应用首页样式的函数
+        function applyHomePageStyles() {
+            // 移除之前的动态样式
+            const existingStyle = document.getElementById('homepage-dynamic-styles');
+            if (existingStyle) {
+                existingStyle.remove();
+            }
+            
+            // 创建新的样式元素
+            const style = document.createElement('style');
+            style.id = 'homepage-dynamic-styles';
+            style.textContent = `
+                .today-learning {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                    color: white !important;
+                    border-radius: 16px !important;
+                    padding: 20px !important;
+                    margin-bottom: 20px !important;
+                    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3) !important;
+                }
+                .learning-header {
+                    display: flex !important;
+                    justify-content: space-between !important;
+                    align-items: center !important;
+                    margin-bottom: 16px !important;
+                }
+                .learning-title {
+                    font-size: 18px !important;
+                    font-weight: 700 !important;
+                }
+                .learning-streak {
+                    background: rgba(255, 255, 255, 0.2) !important;
+                    padding: 4px 12px !important;
+                    border-radius: 12px !important;
+                    font-size: 12px !important;
+                    font-weight: 600 !important;
+                }
+                .learning-stats {
+                    display: grid !important;
+                    grid-template-columns: repeat(3, 1fr) !important;
+                    gap: 16px !important;
+                }
+                .stat-item {
+                    text-align: center !important;
+                    background: rgba(255, 255, 255, 0.15) !important;
+                    padding: 12px !important;
+                    border-radius: 12px !important;
+                }
+                .stat-number {
+                    font-size: 24px !important;
+                    font-weight: 700 !important;
+                    margin-bottom: 4px !important;
+                }
+                .stat-label {
+                    font-size: 12px !important;
+                    opacity: 0.9 !important;
+                }
+                .ability-grid {
+                    display: grid !important;
+                    grid-template-columns: repeat(2, 1fr) !important;
+                    gap: 12px !important;
+                }
+                .ability-item {
+                    background: white !important;
+                    border-radius: 12px !important;
+                    padding: 16px !important;
+                    text-align: center !important;
+                    cursor: pointer !important;
+                    transition: all 0.3s ease !important;
+                    border: 2px solid transparent !important;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+                }
+                .ability-item:hover {
+                    transform: translateY(-2px) !important;
+                    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+                }
+                .ability-item.completed {
+                    border-color: #34d399 !important;
+                    background: linear-gradient(135deg, #f0fdf4, #dcfce7) !important;
+                }
+                .ability-icon {
+                    font-size: 32px !important;
+                    margin-bottom: 8px !important;
+                }
+                .ability-name {
+                    font-size: 14px !important;
+                    font-weight: 600 !important;
+                    color: #1f2937 !important;
+                    margin-bottom: 4px !important;
+                }
+                .ability-progress {
+                    font-size: 12px !important;
+                    color: #6b7280 !important;
+                    font-weight: 500 !important;
+                }
+                .ability-item.completed .ability-progress {
+                    color: #059669 !important;
+                    font-weight: 600 !important;
+                }
+            `;
+            document.head.appendChild(style);
         }
         
         // 初始化主界面
@@ -1987,6 +2056,9 @@
                 </div>
                 </div>
             `;
+            
+            // 立即应用样式
+            applyHomePageStyles();
             
             // 重新初始化首页交互逻辑
             updateHomePageData();
