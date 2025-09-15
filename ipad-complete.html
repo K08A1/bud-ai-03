@@ -838,7 +838,7 @@
                                     <div class="feature-badge">3</div>
                                 </div>
                             </div>
-                            <div class="feature-title">AI助教小萌</div>
+                            <div class="feature-title">AI助教${getAIName()}</div>
                             <div class="feature-subtitle">基于学科内容的智能指导</div>
                             <div class="feature-content">
                                 <div style="background: rgba(255, 255, 255, 0.2); padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px;">
@@ -1104,6 +1104,15 @@
                     },
                     evolutionStage: 'tree', // seedling -> sprout -> tree -> forest -> wisdom
                     specialAbilities: ['creativity_boost', 'learning_reminder']
+                });
+
+                // AI助教设置
+                await MengyaUtils.Data.setData('child.aiAssistant', {
+                    name: '小芽',
+                    customName: false,
+                    personality: 'friendly',
+                    responseStyle: 'encouraging',
+                    lastInteraction: new Date().toISOString()
                 });
 
                 // 丰富的成就系统
@@ -1437,15 +1446,18 @@
                             <i class="fas fa-arrow-left"></i> 返回
                         </button>
                         <div style="flex: 1; text-align: center;">
-                            <div style="font-size: 18px; font-weight: 700; color: #1d1d1f;">AI助教小萌</div>
+                            <div style="font-size: 18px; font-weight: 700; color: #1d1d1f;">AI助教${getAIName()}</div>
                             <div style="font-size: 12px; color: #34d399;">● 在线</div>
                         </div>
+                        <button onclick="showAIRenameDialog()" style="background: none; border: none; color: #007AFF; font-size: 14px; cursor: pointer; padding: 4px 8px; border-radius: 4px;" title="修改AI名字">
+                            <i class="fas fa-edit"></i>
+                        </button>
                     </div>
                     
                     <div style="flex: 1; overflow-y: auto; padding: 20px;" id="chatArea">
                         <div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; text-align: center;">
                             <div style="font-size: 48px; margin-bottom: 12px;">🤖</div>
-                            <h3 style="color: #1d1d1f; margin-bottom: 8px;">AI助教小萌</h3>
+                            <h3 style="color: #1d1d1f; margin-bottom: 8px;">AI助教${getAIName()}</h3>
                             <p style="color: #8e8e93; font-size: 14px;">你好小明！我看到你的创造力很棒，已经80点了！有什么可以帮助你的吗？</p>
                         </div>
                         
@@ -2011,7 +2023,7 @@
                         <div style="display: flex; align-items: center; gap: 16px;">
                             <div style="width: 50px; height: 50px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">🤖</div>
                             <div style="flex: 1;">
-                                <div style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">AI助教小萌</div>
+                                <div style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">AI助教${getAIName()}</div>
                                 <div style="font-size: 14px; opacity: 0.9;">你好小明！今天想学什么呢？</div>
                             </div>
                             <div style="background: #ff3b30; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold;">3</div>
@@ -2100,6 +2112,52 @@
         function setupHomePageInteractions() {
             // 重新绑定所有点击事件已在HTML中定义，无需额外绑定
             console.log('首页交互已重新初始化');
+        }
+        
+        // 获取AI助教名字
+        function getAIName() {
+            const aiData = MengyaUtils.Data.getData('child.aiAssistant', {});
+            return aiData.name || '小芽';
+        }
+        
+        // 设置AI助教名字
+        async function setAIName(newName) {
+            if (!newName || newName.trim() === '') {
+                showNotification('❌ 名字不能为空');
+                return false;
+            }
+            
+            if (newName.length > 10) {
+                showNotification('❌ 名字不能超过10个字符');
+                return false;
+            }
+            
+            try {
+                await MengyaUtils.Data.setData('child.aiAssistant.name', newName.trim());
+                await MengyaUtils.Data.setData('child.aiAssistant.customName', true);
+                showNotification(`✅ AI助教名字已改为"${newName.trim()}"`);
+                return true;
+            } catch (error) {
+                showNotification('❌ 保存失败，请重试');
+                return false;
+            }
+        }
+        
+        // 显示AI改名对话框
+        function showAIRenameDialog() {
+            const currentName = getAIName();
+            const newName = prompt(`请输入新的AI助教名字：\n\n当前名字：${currentName}`, currentName);
+            
+            if (newName !== null && newName !== currentName) {
+                setAIName(newName).then(success => {
+                    if (success) {
+                        // 刷新AI界面显示
+                        if (document.getElementById('appContent').innerHTML.includes('AI助教')) {
+                            switchToAIInterface();
+                        }
+                    }
+                });
+            }
         }
         
         // 重置底部导航状态
